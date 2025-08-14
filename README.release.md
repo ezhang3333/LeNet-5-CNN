@@ -57,6 +57,7 @@ Next, clone libWB library:
 And then compile it: 
 
   `module load cuda/12.6.3`
+
   `cd libwb; make; cd ..`
 
 ### Retrieving Assignments ###
