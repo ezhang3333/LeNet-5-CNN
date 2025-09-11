@@ -16,9 +16,13 @@ These instructions imply that you have obtained an account on Delta and are atte
 
 First, follow this link to establish a class repository: https://edu.cs.illinois.edu/create-gh-repo/fa25_ece408. This needs to be done only once. After this step is complete, you should be able to visit https://github.com/illinois-cs-coursework/fa25_ece408_NETID page (where NETID is your UIUC NetID) that shows the contents of your repository. Initially, this repository will be empty; it will be populated soon.
 
+### Notes on Authentication
+
+When using Delta, you may not need to authenticate yourself to GitHub (via password/personal access token) to clone your repository. In this case, you can skip the next section and go straight to cloning your repository.
+
 ### Creating a PAT (Personal Access Token)
 
-Users are required to either use a Personal Access Token (PAT) or SSH key for Github repositories. In order to generate a token, go to your Github settings at https://github.com/settings/tokens page and click "Generate new token" link. You will need to generate a classic PAT. Give it a meaningful name/note and set the expiration date to be 2-3 weeks past the end of the semester. Check the "repo" box under the "select scopes" menu and create the token. The token is the string that begins with ghp_ - copy it immediately as you will need it throughout the semester. If you accidentally leave the page without copying the token, delete the token and create a new one. Next, click the Configure SSO dropdown menu, and click the Authorize button next to illinois-cs-coursework to allow you to use your token on UIUC repositories.
+*You may skip this step if you're not prompted to authenticate when cloning via HTTPS.* Users are required to either use a Personal Access Token (PAT) or SSH key for Github repositories. In order to generate a token, go to your Github settings at https://github.com/settings/tokens page and click "Generate new token" link. You will need to generate a classic PAT. Give it a meaningful name/note and set the expiration date to be 2-3 weeks past the end of the semester. Check the "repo" box under the "select scopes" menu and create the token. The token is the string that begins with ghp_ - copy it immediately as you will need it throughout the semester. If you accidentally leave the page without copying the token, delete the token and create a new one. Next, click the Configure SSO dropdown menu, and click the Authorize button next to illinois-cs-coursework to allow you to use your token on UIUC repositories.
 
 ### Cloning the Repository
 
@@ -26,7 +30,7 @@ In a Delta terminal, navigate to the location where you would like to keep your 
 
   `git clone https://github.com/illinois-cs-coursework/fa25_ece408_NETID.git ece408git` where NETID is your UIUC NetID.
 
-You will be prompted to enter your username and password. Enter your Github username and then enter your Personal Access Token instead of your password.  This will clone the remote repository to "ece408git" folder on your computer where you will be able to retrieve/submit/work on assignments.
+If prompted for username and password, enter your Github username and then enter your Personal Access Token instead of your password.  This will clone the remote repository to "ece408git" folder on your computer where you will be able to retrieve/submit/work on assignments.
 
 And finally add release repository so you can receive class assignments: 
 

@@ -94,14 +94,14 @@ The remaining lines are commands that will be executed on the GPU node. The line
 #### Other useful slurm commands
 
 ```
-squeue -u <your net id>
+squeue -u $USER
 ```
 
 This command shows the status of your job. Occasionally, when the cluster is very busy, your job will potentially get stuck in the queue. You can use this command to check your job.
 
 In the output of `squeue`, if the row`NODELIST(REASON)` shows `Priority` or `Resource`, it means the cluster is busy with other jobs and you may need to wait for a few minutes.
 
-In addition, the simple command `squeue` without your netid shows the entire job list in the queue, including all the users in Delta. We do not recommend doing that since this list is usually too long and can waste computational resources on the login nodes. Please use this with caution.
+In addition, the simple command `squeue` without `-u $USER` shows the entire job list in the queue, including all the users in Delta. We do not recommend doing that since this list is usually too long and can waste computational resources on the login nodes. Please use this with caution.
 
 
 
@@ -109,7 +109,7 @@ In addition, the simple command `squeue` without your netid shows the entire job
 scancel  <your job id>
 ```
 
-The `squeue -u [your net id]` command will print your job id under the `JOBID` row. Using this ID, you can simply cancel your job if you find you need to modify your code or for any other reasons.
+The `squeue -u $USER` command will print your job id under the `JOBID` row. Using this ID, you can simply cancel your job if you find you need to modify your code or for any other reasons.
 
 
 
