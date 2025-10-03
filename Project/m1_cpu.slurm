@@ -14,7 +14,7 @@
 #SBATCH -t 00:25:00
 
 module reset
-module load cuda
+module load cuda/12.4
 
 echo -e "job $SLURM_JOBID is starting on `hostname`\n\n"
 

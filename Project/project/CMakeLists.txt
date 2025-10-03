@@ -3,7 +3,7 @@ cmake_minimum_required (VERSION 3.20)
 # set(CMAKE_BUILD_TYPE Debug) # Do not set if profiling using NSight
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CUDA_STANDARD 11)
-set(CMAKE_CUDA_ARCHITECTURES 86)
+set(CMAKE_CUDA_ARCHITECTURES "80;86")
 
 project (ece408project LANGUAGES CUDA CXX)
 set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -lineinfo")
