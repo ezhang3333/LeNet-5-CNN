@@ -21,4 +21,4 @@ echo -e "job $SLURM_JOBID is starting on `hostname`\n\n"
 srun ./m1_cpu 100 > m1_cpu.out
 
 # Generate running time information
-# { time srun ./m1_cpu 100 > m1_cpu.out; } 2> time.out
+{ time srun ./m1_cpu 10000 > m1_cpu.out; } 2> time.out
