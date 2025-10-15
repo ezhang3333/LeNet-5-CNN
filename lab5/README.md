@@ -6,7 +6,7 @@ The purpose of this lab is to implement an efficient histogramming equalization
 algorithm for an input image. Like the image convolution MP, the image is represented as `RGB float` values.
 You will convert that to `GrayScale unsigned char` values and compute the histogram.
 Based on the histogram, you will compute a histogram equalization function which you will
-	then apply to the original image to get the color corrected image.	
+	then apply to the original image to get the color corrected image.
 
 ### Retrieving Assignments ###
 
@@ -24,11 +24,11 @@ One more thing, if you are asked to enter your git credentials (PAT) each time y
 
 Before starting this lab, make sure that:
 
-* You have reviewed lectures on parallel scan and histogramming
+* You have reviewed the lecture on histogramming.
 
 ## Instruction
 
-Edit the code in the code tab to perform the following:
+Edit the code in the code tab to perform the following. Note that the scan should be done on CPU, while all other functions should be implemented on the GPU:
 
 * Cast the image to `unsigned char`
 
@@ -36,9 +36,10 @@ Edit the code in the code tab to perform the following:
 
 * Compute the histogram of the image
 
-* Compute the scan (prefix sum) of the histogram to arrive at the histogram equalization function
+* Compute the scan (prefix sum) of the histogram to arrive at the histogram equalization function.
 
 * Apply the equalization function to the input image to get the color corrected image
+
 
 ## Background
 
@@ -89,7 +90,7 @@ The computation to be performed by each kernel is illustrated with serial pseudo
 
 ### Cast the image from `float` to `unsigned char`
 
-Implement a kernel that casts the image from `float *` to `unsigned char *`. 
+Implement a kernel that casts the image from `float *` to `unsigned char *`.
 
 	for ii from 0 to (width * height * channels) do
 		ucharImage[ii] = (unsigned char) (255 * inputImage[ii])
@@ -124,7 +125,7 @@ shown below. You will find one of the lectures and one of the textbook chapters 
 
 ### Compute the Cumulative Distribution Function of `histogram`
 
-This is a scan operation like you have done in the previous lab. A sample sequential pseudo code is shown below.
+This is a scan operation. For this lab, you may implement it on the CPU; you will implement this on the GPU in a future lab. A sample sequential pseudo code is shown below.
 
 	cdf[0] = p(histogram[0])
 	for ii from 1 to 256 do
@@ -143,7 +144,7 @@ Where `p()` calculates the probability of a pixel to be in a histogram bin
 The histogram equalization function (`correct`) remaps the cdf of the histogram of the image to a linear function
 and is defined as
 
-	def correct_color(val) 
+	def correct_color(val)
 		return clamp(255*(cdf[val] - cdfmin)/(1.0 - cdfmin), 0, 255.0)
 	end
 
@@ -183,15 +184,15 @@ Every time you want to submit the work, you will need to `add`, `commit`, and `p
 * ```git push origin main```
 
 
-## Suggestions (for all labs)  
+## Suggestions (for all labs)
 
-* Do not modify the template code provided -- only insert code where the `//@@` demarcation is placed.  
-* Develop your solution incrementally and test each version thoroughly before moving on to the next version.  
-* If you get stuck with boundary conditions, grab a pen and paper. It is much easier to figure out the boundary conditions there.  
-* Implement the serial CPU version first, this will give you an understanding of the loops.  
-* Get the first dataset working first. The datasets are ordered so the first one is the easiest to handle.  
-* Make sure that your algorithm handles non-regular dimensional inputs (not square or multiples of 2). The slides may present the algorithm with nice inputs, since it minimizes the conditions. The datasets reflect different sizes of input that you are expected to handle.  
-* Make sure that you test your program using all the datasets provided. `job.slurm` file contains the code that runs your implementation with all datasets. You can modify it to run one dataset at a time.   
+* Do not modify the template code provided -- only insert code where the `//@@` demarcation is placed.
+* Develop your solution incrementally and test each version thoroughly before moving on to the next version.
+* If you get stuck with boundary conditions, grab a pen and paper. It is much easier to figure out the boundary conditions there.
+* Implement the serial CPU version first, this will give you an understanding of the loops.
+* Get the first dataset working first. The datasets are ordered so the first one is the easiest to handle.
+* Make sure that your algorithm handles non-regular dimensional inputs (not square or multiples of 2). The slides may present the algorithm with nice inputs, since it minimizes the conditions. The datasets reflect different sizes of input that you are expected to handle.
+* Make sure that you test your program using all the datasets provided. `job.slurm` file contains the code that runs your implementation with all datasets. You can modify it to run one dataset at a time.
 * Check for errors: for example, when developing CUDA code, one can check for if the function call succeeded and print an error if not via the following macro:
 ```
 #define wbCheck(stmt) do {                                                    \
