@@ -19,38 +19,40 @@ set -e
 
 echo -e "job $SLURM_JOBID is starting on `hostname`\n\n"
 
+SANITIZER_FLAGS="--show-backtrace no --print-limit 5 --error-exitcode -1 --destroy-on-device-error kernel"
+
 srun echo -e "\nmemcheck tests:"
-srun compute-sanitizer --tool memcheck --show-backtrace no --print-limit 5 --error-exitcode -1 --destroy-on-device-error kernel ./lab3 -e data/2/output.raw -i data/2/input0.raw,data/2/input1.raw -o /tmp/myoutput.raw -t matrix 
-srun compute-sanitizer --tool memcheck --show-backtrace no --print-limit 5 --error-exitcode -1 --destroy-on-device-error kernel ./lab3 -e data/3/output.raw -i data/3/input0.raw,data/3/input1.raw -o /tmp/myoutput.raw -t matrix 
-srun compute-sanitizer --tool memcheck --show-backtrace no --print-limit 5 --error-exitcode -1 --destroy-on-device-error kernel ./lab3 -e data/4/output.raw -i data/4/input0.raw,data/4/input1.raw -o /tmp/myoutput.raw -t matrix 
-srun compute-sanitizer --tool memcheck --show-backtrace no --print-limit 5 --error-exitcode -1 --destroy-on-device-error kernel ./lab3 -e data/5/output.raw -i data/5/input0.raw,data/5/input1.raw -o /tmp/myoutput.raw -t matrix 
-srun compute-sanitizer --tool memcheck --show-backtrace no --print-limit 5 --error-exitcode -1 --destroy-on-device-error kernel ./lab3 -e data/6/output.raw -i data/6/input0.raw,data/6/input1.raw -o /tmp/myoutput.raw -t matrix 
-srun compute-sanitizer --tool memcheck --show-backtrace no --print-limit 5 --error-exitcode -1 --destroy-on-device-error kernel ./lab3 -e data/7/output.raw -i data/7/input0.raw,data/7/input1.raw -o /tmp/myoutput.raw -t matrix 
-srun compute-sanitizer --tool memcheck --show-backtrace no --print-limit 5 --error-exitcode -1 --destroy-on-device-error kernel ./lab3 -e data/8/output.raw -i data/8/input0.raw,data/8/input1.raw -o /tmp/myoutput.raw -t matrix 
-srun compute-sanitizer --tool memcheck --show-backtrace no --print-limit 5 --error-exitcode -1 --destroy-on-device-error kernel ./lab3 -e data/9/output.raw -i data/9/input0.raw,data/9/input1.raw -o /tmp/myoutput.raw -t matrix 
+srun compute-sanitizer --tool memcheck $SANITIZER_FLAGS ./lab3 -e data/2/output.raw -i data/2/input0.raw,data/2/input1.raw -o /tmp/myoutput.raw -t matrix 
+srun compute-sanitizer --tool memcheck $SANITIZER_FLAGS ./lab3 -e data/3/output.raw -i data/3/input0.raw,data/3/input1.raw -o /tmp/myoutput.raw -t matrix 
+srun compute-sanitizer --tool memcheck $SANITIZER_FLAGS ./lab3 -e data/4/output.raw -i data/4/input0.raw,data/4/input1.raw -o /tmp/myoutput.raw -t matrix 
+srun compute-sanitizer --tool memcheck $SANITIZER_FLAGS ./lab3 -e data/5/output.raw -i data/5/input0.raw,data/5/input1.raw -o /tmp/myoutput.raw -t matrix 
+srun compute-sanitizer --tool memcheck $SANITIZER_FLAGS ./lab3 -e data/6/output.raw -i data/6/input0.raw,data/6/input1.raw -o /tmp/myoutput.raw -t matrix 
+srun compute-sanitizer --tool memcheck $SANITIZER_FLAGS ./lab3 -e data/7/output.raw -i data/7/input0.raw,data/7/input1.raw -o /tmp/myoutput.raw -t matrix 
+srun compute-sanitizer --tool memcheck $SANITIZER_FLAGS ./lab3 -e data/8/output.raw -i data/8/input0.raw,data/8/input1.raw -o /tmp/myoutput.raw -t matrix 
+srun compute-sanitizer --tool memcheck $SANITIZER_FLAGS ./lab3 -e data/9/output.raw -i data/9/input0.raw,data/9/input1.raw -o /tmp/myoutput.raw -t matrix 
 
 srun echo -e "\ninitcheck tests:"
-srun compute-sanitizer --tool initcheck --show-backtrace no --print-limit 5 --error-exitcode -1 --destroy-on-device-error kernel ./lab3 -e data/0/output.raw -i data/0/input0.raw,data/0/input1.raw -o /tmp/myoutput.raw -t matrix
-srun compute-sanitizer --tool initcheck --show-backtrace no --print-limit 5 --error-exitcode -1 --destroy-on-device-error kernel ./lab3 -e data/1/output.raw -i data/1/input0.raw,data/1/input1.raw -o /tmp/myoutput.raw -t matrix
-srun compute-sanitizer --tool initcheck --show-backtrace no --print-limit 5 --error-exitcode -1 --destroy-on-device-error kernel ./lab3 -e data/2/output.raw -i data/2/input0.raw,data/2/input1.raw -o /tmp/myoutput.raw -t matrix
-srun compute-sanitizer --tool initcheck --show-backtrace no --print-limit 5 --error-exitcode -1 --destroy-on-device-error kernel ./lab3 -e data/3/output.raw -i data/3/input0.raw,data/3/input1.raw -o /tmp/myoutput.raw -t matrix
-srun compute-sanitizer --tool initcheck --show-backtrace no --print-limit 5 --error-exitcode -1 --destroy-on-device-error kernel ./lab3 -e data/4/output.raw -i data/4/input0.raw,data/4/input1.raw -o /tmp/myoutput.raw -t matrix
-srun compute-sanitizer --tool initcheck --show-backtrace no --print-limit 5 --error-exitcode -1 --destroy-on-device-error kernel ./lab3 -e data/5/output.raw -i data/5/input0.raw,data/5/input1.raw -o /tmp/myoutput.raw -t matrix
-srun compute-sanitizer --tool initcheck --show-backtrace no --print-limit 5 --error-exitcode -1 --destroy-on-device-error kernel ./lab3 -e data/6/output.raw -i data/6/input0.raw,data/6/input1.raw -o /tmp/myoutput.raw -t matrix
-srun compute-sanitizer --tool initcheck --show-backtrace no --print-limit 5 --error-exitcode -1 --destroy-on-device-error kernel ./lab3 -e data/7/output.raw -i data/7/input0.raw,data/7/input1.raw -o /tmp/myoutput.raw -t matrix
-srun compute-sanitizer --tool initcheck --show-backtrace no --print-limit 5 --error-exitcode -1 --destroy-on-device-error kernel ./lab3 -e data/8/output.raw -i data/8/input0.raw,data/8/input1.raw -o /tmp/myoutput.raw -t matrix
-srun compute-sanitizer --tool initcheck --show-backtrace no --print-limit 5 --error-exitcode -1 --destroy-on-device-error kernel ./lab3 -e data/9/output.raw -i data/9/input0.raw,data/9/input1.raw -o /tmp/myoutput.raw -t matrix
+srun compute-sanitizer --tool initcheck $SANITIZER_FLAGS ./lab3 -e data/0/output.raw -i data/0/input0.raw,data/0/input1.raw -o /tmp/myoutput.raw -t matrix
+srun compute-sanitizer --tool initcheck $SANITIZER_FLAGS ./lab3 -e data/1/output.raw -i data/1/input0.raw,data/1/input1.raw -o /tmp/myoutput.raw -t matrix
+srun compute-sanitizer --tool initcheck $SANITIZER_FLAGS ./lab3 -e data/2/output.raw -i data/2/input0.raw,data/2/input1.raw -o /tmp/myoutput.raw -t matrix
+srun compute-sanitizer --tool initcheck $SANITIZER_FLAGS ./lab3 -e data/3/output.raw -i data/3/input0.raw,data/3/input1.raw -o /tmp/myoutput.raw -t matrix
+srun compute-sanitizer --tool initcheck $SANITIZER_FLAGS ./lab3 -e data/4/output.raw -i data/4/input0.raw,data/4/input1.raw -o /tmp/myoutput.raw -t matrix
+srun compute-sanitizer --tool initcheck $SANITIZER_FLAGS ./lab3 -e data/5/output.raw -i data/5/input0.raw,data/5/input1.raw -o /tmp/myoutput.raw -t matrix
+srun compute-sanitizer --tool initcheck $SANITIZER_FLAGS ./lab3 -e data/6/output.raw -i data/6/input0.raw,data/6/input1.raw -o /tmp/myoutput.raw -t matrix
+srun compute-sanitizer --tool initcheck $SANITIZER_FLAGS ./lab3 -e data/7/output.raw -i data/7/input0.raw,data/7/input1.raw -o /tmp/myoutput.raw -t matrix
+srun compute-sanitizer --tool initcheck $SANITIZER_FLAGS ./lab3 -e data/8/output.raw -i data/8/input0.raw,data/8/input1.raw -o /tmp/myoutput.raw -t matrix
+srun compute-sanitizer --tool initcheck $SANITIZER_FLAGS ./lab3 -e data/9/output.raw -i data/9/input0.raw,data/9/input1.raw -o /tmp/myoutput.raw -t matrix
 
 srun echo -e "\nsynccheck tests:"
-srun compute-sanitizer --tool synccheck --show-backtrace no --print-limit 5 --error-exitcode -1 --destroy-on-device-error kernel ./lab3 -e data/0/output.raw -i data/0/input0.raw,data/0/input1.raw -o /tmp/myoutput.raw -t matrix
-srun compute-sanitizer --tool synccheck --show-backtrace no --print-limit 5 --error-exitcode -1 --destroy-on-device-error kernel ./lab3 -e data/1/output.raw -i data/1/input0.raw,data/1/input1.raw -o /tmp/myoutput.raw -t matrix
-srun compute-sanitizer --tool synccheck --show-backtrace no --print-limit 5 --error-exitcode -1 --destroy-on-device-error kernel ./lab3 -e data/2/output.raw -i data/2/input0.raw,data/2/input1.raw -o /tmp/myoutput.raw -t matrix
-srun compute-sanitizer --tool synccheck --show-backtrace no --print-limit 5 --error-exitcode -1 --destroy-on-device-error kernel ./lab3 -e data/3/output.raw -i data/3/input0.raw,data/3/input1.raw -o /tmp/myoutput.raw -t matrix
-srun compute-sanitizer --tool synccheck --show-backtrace no --print-limit 5 --error-exitcode -1 --destroy-on-device-error kernel ./lab3 -e data/4/output.raw -i data/4/input0.raw,data/4/input1.raw -o /tmp/myoutput.raw -t matrix
-srun compute-sanitizer --tool synccheck --show-backtrace no --print-limit 5 --error-exitcode -1 --destroy-on-device-error kernel ./lab3 -e data/5/output.raw -i data/5/input0.raw,data/5/input1.raw -o /tmp/myoutput.raw -t matrix
-srun compute-sanitizer --tool synccheck --show-backtrace no --print-limit 5 --error-exitcode -1 --destroy-on-device-error kernel ./lab3 -e data/6/output.raw -i data/6/input0.raw,data/6/input1.raw -o /tmp/myoutput.raw -t matrix
-srun compute-sanitizer --tool synccheck --show-backtrace no --print-limit 5 --error-exitcode -1 --destroy-on-device-error kernel ./lab3 -e data/7/output.raw -i data/7/input0.raw,data/7/input1.raw -o /tmp/myoutput.raw -t matrix
-srun compute-sanitizer --tool synccheck --show-backtrace no --print-limit 5 --error-exitcode -1 --destroy-on-device-error kernel ./lab3 -e data/8/output.raw -i data/8/input0.raw,data/8/input1.raw -o /tmp/myoutput.raw -t matrix
-srun compute-sanitizer --tool synccheck --show-backtrace no --print-limit 5 --error-exitcode -1 --destroy-on-device-error kernel ./lab3 -e data/9/output.raw -i data/9/input0.raw,data/9/input1.raw -o /tmp/myoutput.raw -t matrix
+srun compute-sanitizer --tool synccheck $SANITIZER_FLAGS ./lab3 -e data/0/output.raw -i data/0/input0.raw,data/0/input1.raw -o /tmp/myoutput.raw -t matrix
+srun compute-sanitizer --tool synccheck $SANITIZER_FLAGS ./lab3 -e data/1/output.raw -i data/1/input0.raw,data/1/input1.raw -o /tmp/myoutput.raw -t matrix
+srun compute-sanitizer --tool synccheck $SANITIZER_FLAGS ./lab3 -e data/2/output.raw -i data/2/input0.raw,data/2/input1.raw -o /tmp/myoutput.raw -t matrix
+srun compute-sanitizer --tool synccheck $SANITIZER_FLAGS ./lab3 -e data/3/output.raw -i data/3/input0.raw,data/3/input1.raw -o /tmp/myoutput.raw -t matrix
+srun compute-sanitizer --tool synccheck $SANITIZER_FLAGS ./lab3 -e data/4/output.raw -i data/4/input0.raw,data/4/input1.raw -o /tmp/myoutput.raw -t matrix
+srun compute-sanitizer --tool synccheck $SANITIZER_FLAGS ./lab3 -e data/5/output.raw -i data/5/input0.raw,data/5/input1.raw -o /tmp/myoutput.raw -t matrix
+srun compute-sanitizer --tool synccheck $SANITIZER_FLAGS ./lab3 -e data/6/output.raw -i data/6/input0.raw,data/6/input1.raw -o /tmp/myoutput.raw -t matrix
+srun compute-sanitizer --tool synccheck $SANITIZER_FLAGS ./lab3 -e data/7/output.raw -i data/7/input0.raw,data/7/input1.raw -o /tmp/myoutput.raw -t matrix
+srun compute-sanitizer --tool synccheck $SANITIZER_FLAGS ./lab3 -e data/8/output.raw -i data/8/input0.raw,data/8/input1.raw -o /tmp/myoutput.raw -t matrix
+srun compute-sanitizer --tool synccheck $SANITIZER_FLAGS ./lab3 -e data/9/output.raw -i data/9/input0.raw,data/9/input1.raw -o /tmp/myoutput.raw -t matrix
 
 srun echo -e "\nall tests completed."

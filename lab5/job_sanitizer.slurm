@@ -17,40 +17,42 @@ module load cuda/12.4
 
 echo -e "job $SLURM_JOBID is starting on `hostname`\n\n"
 
+SANITIZER_FLAGS="--show-backtrace no --print-limit 5 --error-exitcode -1 --destroy-on-device-error kernel"
+
 srun echo -e "\nmemcheck tests:"
-srun compute-sanitizer --tool memcheck lab5 -e data/0/output.ppm -i data/0/input.ppm -o /tmp/myoutput.raw -t image
-srun compute-sanitizer --tool memcheck lab5 -e data/1/output.ppm -i data/1/input.ppm -o /tmp/myoutput.raw -t image
-srun compute-sanitizer --tool memcheck lab5 -e data/2/output.ppm -i data/2/input.ppm -o /tmp/myoutput.raw -t image
-srun compute-sanitizer --tool memcheck lab5 -e data/3/output.ppm -i data/3/input.ppm -o /tmp/myoutput.raw -t image
-srun compute-sanitizer --tool memcheck lab5 -e data/4/output.ppm -i data/4/input.ppm -o /tmp/myoutput.raw -t image
-srun compute-sanitizer --tool memcheck lab5 -e data/5/output.ppm -i data/5/input.ppm -o /tmp/myoutput.raw -t image
-srun compute-sanitizer --tool memcheck lab5 -e data/6/output.ppm -i data/6/input.ppm -o /tmp/myoutput.raw -t image
-srun compute-sanitizer --tool memcheck lab5 -e data/7/output.ppm -i data/7/input.ppm -o /tmp/myoutput.raw -t image
-srun compute-sanitizer --tool memcheck lab5 -e data/8/output.ppm -i data/8/input.ppm -o /tmp/myoutput.raw -t image
-srun compute-sanitizer --tool memcheck lab5 -e data/9/output.ppm -i data/9/input.ppm -o /tmp/myoutput.raw -t image
+srun compute-sanitizer --tool memcheck $SANITIZER_FLAGS lab5 -e data/0/output.ppm -i data/0/input.ppm -o /tmp/myoutput.raw -t image
+srun compute-sanitizer --tool memcheck $SANITIZER_FLAGS lab5 -e data/1/output.ppm -i data/1/input.ppm -o /tmp/myoutput.raw -t image
+srun compute-sanitizer --tool memcheck $SANITIZER_FLAGS lab5 -e data/2/output.ppm -i data/2/input.ppm -o /tmp/myoutput.raw -t image
+srun compute-sanitizer --tool memcheck $SANITIZER_FLAGS lab5 -e data/3/output.ppm -i data/3/input.ppm -o /tmp/myoutput.raw -t image
+srun compute-sanitizer --tool memcheck $SANITIZER_FLAGS lab5 -e data/4/output.ppm -i data/4/input.ppm -o /tmp/myoutput.raw -t image
+srun compute-sanitizer --tool memcheck $SANITIZER_FLAGS lab5 -e data/5/output.ppm -i data/5/input.ppm -o /tmp/myoutput.raw -t image
+srun compute-sanitizer --tool memcheck $SANITIZER_FLAGS lab5 -e data/6/output.ppm -i data/6/input.ppm -o /tmp/myoutput.raw -t image
+srun compute-sanitizer --tool memcheck $SANITIZER_FLAGS lab5 -e data/7/output.ppm -i data/7/input.ppm -o /tmp/myoutput.raw -t image
+srun compute-sanitizer --tool memcheck $SANITIZER_FLAGS lab5 -e data/8/output.ppm -i data/8/input.ppm -o /tmp/myoutput.raw -t image
+srun compute-sanitizer --tool memcheck $SANITIZER_FLAGS lab5 -e data/9/output.ppm -i data/9/input.ppm -o /tmp/myoutput.raw -t image
 
 srun echo -e "\ninitcheck tests:"
-srun compute-sanitizer --tool initcheck lab5 -e data/0/output.ppm -i data/0/input.ppm -o /tmp/myoutput.raw -t image
-srun compute-sanitizer --tool initcheck lab5 -e data/1/output.ppm -i data/1/input.ppm -o /tmp/myoutput.raw -t image
-srun compute-sanitizer --tool initcheck lab5 -e data/2/output.ppm -i data/2/input.ppm -o /tmp/myoutput.raw -t image
-srun compute-sanitizer --tool initcheck lab5 -e data/3/output.ppm -i data/3/input.ppm -o /tmp/myoutput.raw -t image
-srun compute-sanitizer --tool initcheck lab5 -e data/4/output.ppm -i data/4/input.ppm -o /tmp/myoutput.raw -t image
-srun compute-sanitizer --tool initcheck lab5 -e data/5/output.ppm -i data/5/input.ppm -o /tmp/myoutput.raw -t image
-srun compute-sanitizer --tool initcheck lab5 -e data/6/output.ppm -i data/6/input.ppm -o /tmp/myoutput.raw -t image
-srun compute-sanitizer --tool initcheck lab5 -e data/7/output.ppm -i data/7/input.ppm -o /tmp/myoutput.raw -t image
-srun compute-sanitizer --tool initcheck lab5 -e data/8/output.ppm -i data/8/input.ppm -o /tmp/myoutput.raw -t image
-srun compute-sanitizer --tool initcheck lab5 -e data/9/output.ppm -i data/9/input.ppm -o /tmp/myoutput.raw -t image
+srun compute-sanitizer --tool initcheck $SANITIZER_FLAGS lab5 -e data/0/output.ppm -i data/0/input.ppm -o /tmp/myoutput.raw -t image
+srun compute-sanitizer --tool initcheck $SANITIZER_FLAGS lab5 -e data/1/output.ppm -i data/1/input.ppm -o /tmp/myoutput.raw -t image
+srun compute-sanitizer --tool initcheck $SANITIZER_FLAGS lab5 -e data/2/output.ppm -i data/2/input.ppm -o /tmp/myoutput.raw -t image
+srun compute-sanitizer --tool initcheck $SANITIZER_FLAGS lab5 -e data/3/output.ppm -i data/3/input.ppm -o /tmp/myoutput.raw -t image
+srun compute-sanitizer --tool initcheck $SANITIZER_FLAGS lab5 -e data/4/output.ppm -i data/4/input.ppm -o /tmp/myoutput.raw -t image
+srun compute-sanitizer --tool initcheck $SANITIZER_FLAGS lab5 -e data/5/output.ppm -i data/5/input.ppm -o /tmp/myoutput.raw -t image
+srun compute-sanitizer --tool initcheck $SANITIZER_FLAGS lab5 -e data/6/output.ppm -i data/6/input.ppm -o /tmp/myoutput.raw -t image
+srun compute-sanitizer --tool initcheck $SANITIZER_FLAGS lab5 -e data/7/output.ppm -i data/7/input.ppm -o /tmp/myoutput.raw -t image
+srun compute-sanitizer --tool initcheck $SANITIZER_FLAGS lab5 -e data/8/output.ppm -i data/8/input.ppm -o /tmp/myoutput.raw -t image
+srun compute-sanitizer --tool initcheck $SANITIZER_FLAGS lab5 -e data/9/output.ppm -i data/9/input.ppm -o /tmp/myoutput.raw -t image
 
 srun echo -e "\nsynccheck tests:"
-srun compute-sanitizer --tool synccheck lab5 -e data/0/output.ppm -i data/0/input.ppm -o /tmp/myoutput.raw -t image
-srun compute-sanitizer --tool synccheck lab5 -e data/1/output.ppm -i data/1/input.ppm -o /tmp/myoutput.raw -t image
-srun compute-sanitizer --tool synccheck lab5 -e data/2/output.ppm -i data/2/input.ppm -o /tmp/myoutput.raw -t image
-srun compute-sanitizer --tool synccheck lab5 -e data/3/output.ppm -i data/3/input.ppm -o /tmp/myoutput.raw -t image
-srun compute-sanitizer --tool synccheck lab5 -e data/4/output.ppm -i data/4/input.ppm -o /tmp/myoutput.raw -t image
-srun compute-sanitizer --tool synccheck lab5 -e data/5/output.ppm -i data/5/input.ppm -o /tmp/myoutput.raw -t image
-srun compute-sanitizer --tool synccheck lab5 -e data/6/output.ppm -i data/6/input.ppm -o /tmp/myoutput.raw -t image
-srun compute-sanitizer --tool synccheck lab5 -e data/7/output.ppm -i data/7/input.ppm -o /tmp/myoutput.raw -t image
-srun compute-sanitizer --tool synccheck lab5 -e data/8/output.ppm -i data/8/input.ppm -o /tmp/myoutput.raw -t image
-srun compute-sanitizer --tool synccheck lab5 -e data/9/output.ppm -i data/9/input.ppm -o /tmp/myoutput.raw -t image
+srun compute-sanitizer --tool synccheck $SANITIZER_FLAGS lab5 -e data/0/output.ppm -i data/0/input.ppm -o /tmp/myoutput.raw -t image
+srun compute-sanitizer --tool synccheck $SANITIZER_FLAGS lab5 -e data/1/output.ppm -i data/1/input.ppm -o /tmp/myoutput.raw -t image
+srun compute-sanitizer --tool synccheck $SANITIZER_FLAGS lab5 -e data/2/output.ppm -i data/2/input.ppm -o /tmp/myoutput.raw -t image
+srun compute-sanitizer --tool synccheck $SANITIZER_FLAGS lab5 -e data/3/output.ppm -i data/3/input.ppm -o /tmp/myoutput.raw -t image
+srun compute-sanitizer --tool synccheck $SANITIZER_FLAGS lab5 -e data/4/output.ppm -i data/4/input.ppm -o /tmp/myoutput.raw -t image
+srun compute-sanitizer --tool synccheck $SANITIZER_FLAGS lab5 -e data/5/output.ppm -i data/5/input.ppm -o /tmp/myoutput.raw -t image
+srun compute-sanitizer --tool synccheck $SANITIZER_FLAGS lab5 -e data/6/output.ppm -i data/6/input.ppm -o /tmp/myoutput.raw -t image
+srun compute-sanitizer --tool synccheck $SANITIZER_FLAGS lab5 -e data/7/output.ppm -i data/7/input.ppm -o /tmp/myoutput.raw -t image
+srun compute-sanitizer --tool synccheck $SANITIZER_FLAGS lab5 -e data/8/output.ppm -i data/8/input.ppm -o /tmp/myoutput.raw -t image
+srun compute-sanitizer --tool synccheck $SANITIZER_FLAGS lab5 -e data/9/output.ppm -i data/9/input.ppm -o /tmp/myoutput.raw -t image
 
 srun echo -e "\nall tests completed."
