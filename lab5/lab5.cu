@@ -93,11 +93,9 @@ int main(int argc, char **argv) {
     float *hostOutputImageData;
     const char *inputImageFile;
 
-    // 1. Parse args
     args = wbArg_read(argc, argv);
     inputImageFile = wbArg_getInputFile(args, 0);
 
-    // 2. Import image
     inputImage = wbImport(inputImageFile);
     imageWidth = wbImage_getWidth(inputImage);
     imageHeight = wbImage_getHeight(inputImage);
@@ -110,7 +108,6 @@ int main(int argc, char **argv) {
     hostInputImageData = wbImage_getData(inputImage);
     hostOutputImageData = wbImage_getData(outputImage);
 
-    // 3. Allocate device memory
     float *deviceInputImageData, *deviceOutputImageData;
     unsigned char *deviceUcharImage, *deviceGrayImage, *deviceEqualizedImage;
     unsigned int *deviceHistogram;
@@ -132,7 +129,6 @@ int main(int argc, char **argv) {
     int gridSize = (imgSize + blockSize - 1) / blockSize;
     int grayGrid = (graySize + blockSize - 1) / blockSize;
 
-    // 4. Run kernels step by step
     floatToUchar<<<gridSize, blockSize>>>(deviceInputImageData, deviceUcharImage, imgSize);
     cudaDeviceSynchronize();
 
@@ -145,7 +141,6 @@ int main(int argc, char **argv) {
     computeCDF<<<1, HISTOGRAM_LENGTH>>>(deviceCDF, deviceHistogram, HISTOGRAM_LENGTH, graySize);
     cudaDeviceSynchronize();
 
-    // 5. Copy CDF to host to find cdfMin
     float hostCDF[HISTOGRAM_LENGTH];
     wbCheck(cudaMemcpy(hostCDF, deviceCDF, HISTOGRAM_LENGTH * sizeof(float), cudaMemcpyDeviceToHost));
     float cdfMin = 1.0f;
@@ -156,23 +151,18 @@ int main(int argc, char **argv) {
         }
     }
 
-    // 6. Apply equalization to all channels
     applyEqualization<<<gridSize, blockSize>>>(deviceUcharImage, deviceEqualizedImage,
                                                deviceCDF, cdfMin, imgSize);
     cudaDeviceSynchronize();
 
-    // 7. Convert back to float
     ucharToFloat<<<gridSize, blockSize>>>(deviceEqualizedImage, deviceOutputImageData, imgSize);
     cudaDeviceSynchronize();
 
-    // 8. Copy to host
     wbCheck(cudaMemcpy(hostOutputImageData, deviceOutputImageData,
                        imgSize * sizeof(float), cudaMemcpyDeviceToHost));
 
-    // 9. Output result
     wbSolution(args, outputImage);
 
-    // 10. Cleanup
     cudaFree(deviceInputImageData);
     cudaFree(deviceUcharImage);
     cudaFree(deviceGrayImage);
