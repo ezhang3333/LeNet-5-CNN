@@ -12,7 +12,7 @@ You will be working with a **modified** version of the LeNet-5 architecture show
 
 *Source: http://vision.stanford.edu/cs598_spring07/papers/Lecun98.pdf*
 
-Your optimized CUDA implementation of the convolutional layer will be used to perform inference for layers C1 and C3 in the figure above. We will be leveraging the [mini-dnn-cpp](https://github.com/iamhankai/mini-dnn-cpp) (Mini-DNN) framework for implementing the modified LeNet-5. 
+Your optimized CUDA implementation of the convolutional layer will be used to perform inference for layers C1 and C3 in the figure above. We will be leveraging the [mini-dnn-cpp](https://github.com/iamhankai/mini-dnn-cpp) (Mini-DNN) framework for implementing the modified LeNet-5.
 
 We will be using the [Fashion MNIST dataset](https://github.com/zalandoresearch/fashion-mnist), where the inputs to the network will be a batch of 10,000 single channel images, each with dimensions of 86 x 86 pixels. The output layer consists of 10 nodes, where each node represents the likelihood of the input belonging to one of the 10 classes (T-shirt, dress, sneaker, boot etc.)
 
@@ -33,6 +33,7 @@ So please always do `git pull` to update the project instructions.
 | Milestone                   | Due                    | Score |
 | --------------------------- | ---------------------- | ----- |
 | [Milestone 1](README_m1.md) | October 10th, 2025 8PM | 10%   |
+| [Milestone 2](README_m2.md) | November 7th, 2025 8PM | 35%   |
 
 
 ## License

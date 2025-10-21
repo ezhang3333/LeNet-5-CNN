@@ -24,3 +24,12 @@ target_compile_options(m1_cpu PRIVATE "$<$<CONFIG:DEBUG>:-gdwarf-5>")
 
 add_executable(m1_gpu m1_gpu.cc "${PROJECT_SOURCE_DIR}/src/layer/custom/new-forward.cu")
 target_link_libraries(m1_gpu ece408net MiniDNNLib)
+
+add_executable(m2_unroll m1_gpu.cc
+                         "${PROJECT_SOURCE_DIR}/src/layer/custom/unroll-new-forward.cu"
+                         "${PROJECT_SOURCE_DIR}/src/layer/custom/matmul.cu")
+target_link_libraries(m2_unroll ece408net MiniDNNLib)
+
+add_executable(m2_fused m1_gpu.cc
+                         "${PROJECT_SOURCE_DIR}/src/layer/custom/kernel-fusion-forward.cu")
+target_link_libraries(m2_fused ece408net MiniDNNLib)
