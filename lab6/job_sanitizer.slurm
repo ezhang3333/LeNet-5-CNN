@@ -57,4 +57,6 @@ srun compute-sanitizer --tool synccheck $SANITIZER_FLAGS lab6 -e data/7/output.r
 srun compute-sanitizer --tool synccheck $SANITIZER_FLAGS lab6 -e data/8/output.raw -i data/8/input0.raw -o /tmp/myoutput.raw -t vector
 srun compute-sanitizer --tool synccheck $SANITIZER_FLAGS lab6 -e data/9/output.raw -i data/9/input0.raw -o /tmp/myoutput.raw -t vector
 
+sync
+
 srun echo -e "\nall tests completed."
