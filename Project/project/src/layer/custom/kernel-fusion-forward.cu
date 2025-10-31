@@ -2,79 +2,200 @@
 #include <iostream>
 #include "gpu-new-forward.h"
 
+#ifndef TILE
+#define TILE 16
+#endif
 
-__global__ void matmul_conv_fused(const float *mask, const float *input, float *output,
-                                  int Batch, int Map_out, int Channel, int Height, int Width, int K)
+__host__ __device__ inline int iDivUp(int a, int b) { return (a + b - 1) / b; }
+
+__global__ void matmul_conv_fused(const float * __restrict__ mask,
+                                  const float * __restrict__ input,
+                                  float * __restrict__ output,
+                                  int Batch, int Map_out, int Channel,
+                                  int Height, int Width, int K)
 {
-    /*
-    TODO: Modify this function to implement the fused unroll-matmul-permute kernel.
-    
-    Function parameter definitions:
-    mask - convolution kernel
-    input - input
-    output - output
-    Batch - batch_size (number of images in x)
-    Map_out - number of output feature maps
-    Channel - number of input feature maps
-    Height - input height dimension
-    Width - input width dimension
-    K - kernel height and width (K x K)
-    */
+    const int H_out = Height - K + 1;
+    const int W_out = Width  - K + 1;
 
+    const size_t Kc    = static_cast<size_t>(Channel) * K * K;
+    const size_t Ncols = static_cast<size_t>(Batch) * H_out * W_out;
+
+    const int row = blockIdx.y * TILE + threadIdx.y;
+    const int col = blockIdx.x * TILE + threadIdx.x;
+
+    __shared__ float As[TILE][TILE];
+    __shared__ float Bs[TILE][TILE];
+
+    float acc = 0.0f;
+
+    for (size_t t = 0; t < (Kc + TILE - 1) / TILE; ++t)
+    {
+        float a_elt = 0.0f;
+        const size_t a_col = t * TILE + threadIdx.x;
+        if (row < Map_out && a_col < Kc)
+        {
+            const int c  = static_cast<int>(a_col / (K * K));
+            const int rem= static_cast<int>(a_col % (K * K));
+            const int p  = rem / K;
+            const int q  = rem % K;
+
+            const size_t mcpq =
+                ((static_cast<size_t>(row) * Channel + c) * K + p) * K + q;
+            a_elt = mask[mcpq];
+        }
+        As[threadIdx.y][threadIdx.x] = a_elt;
+
+        float b_elt = 0.0f;
+        const size_t b_row = t * TILE + threadIdx.y;
+        if (b_row < Kc && col < Ncols)
+        {
+            const size_t HW_out = static_cast<size_t>(H_out) * W_out;
+            const int b     = static_cast<int>(col / HW_out);
+            const size_t hw = static_cast<size_t>(col % HW_out);
+            const int h_o   = static_cast<int>(hw / W_out);
+            const int w_o   = static_cast<int>(hw % W_out);
+
+            const int c  = static_cast<int>(b_row / (K * K));
+            const int rem= static_cast<int>(b_row % (K * K));
+            const int p  = rem / K;
+            const int q  = rem % K;
+
+            const int h_in = h_o + p;
+            const int w_in = w_o + q;
+
+            if (b < Batch && c < Channel &&
+                h_in >= 0 && h_in < Height &&
+                w_in >= 0 && w_in < Width)
+            {
+                const size_t idx =
+                    (((static_cast<size_t>(b) * Channel + c) * Height + h_in) * Width + w_in);
+                b_elt = input[idx];
+            }
+        }
+        Bs[threadIdx.y][threadIdx.x] = b_elt;
+
+        __syncthreads();
+
+        #pragma unroll
+        for (int k = 0; k < TILE; ++k)
+        {
+            acc += As[threadIdx.y][k] * Bs[k][threadIdx.x];
+        }
+
+        __syncthreads();
+    }
+
+    if (row < Map_out && col < Ncols)
+    {
+        const size_t HW_out = static_cast<size_t>(H_out) * W_out;
+        const int b     = static_cast<int>(col / HW_out);
+        const size_t hw = static_cast<size_t>(col % HW_out);
+        const int h_o   = static_cast<int>(hw / W_out);
+        const int w_o   = static_cast<int>(hw % W_out);
+
+        const size_t out_idx =
+            (((static_cast<size_t>(b) * Map_out + row) * H_out) + h_o) * W_out + w_o;
+
+        output[out_idx] = acc;
+    }
 }
 
-__host__ void GPUInterface::conv_forward_gpu_prolog(const float *host_output, const float *host_input, const float *host_mask, float **device_output_ptr, float **device_input_ptr, float **device_mask_ptr, const int Batch, const int Map_out, const int Channel, const int Height, const int Width, const int K)
+__host__ void GPUInterface::conv_forward_gpu_prolog(const float * /*host_output*/,
+                                                    const float * host_input,
+                                                    const float * host_mask,
+                                                    float **device_output_ptr,
+                                                    float **device_input_ptr,
+                                                    float **device_mask_ptr,
+                                                    const int Batch, const int Map_out,
+                                                    const int Channel, const int Height,
+                                                    const int Width, const int K)
 {
-    // TODO: Allocate memory and copy over the relevant data structures to the GPU
+    const int H_out = Height - K + 1;
+    const int W_out = Width  - K + 1;
 
-    // We pass double pointers for you to initialize the relevant device pointers,
-    //  which are passed to the other two functions.
+    const size_t in_elems  = static_cast<size_t>(Batch) * Channel * Height * Width;
+    const size_t out_elems = static_cast<size_t>(Batch) * Map_out * H_out * W_out;
+    const size_t m_elems   = static_cast<size_t>(Map_out) * Channel * K * K;
 
-    // Useful snippet for error checking
-    // cudaError_t error = cudaGetLastError();
-    // if(error != cudaSuccess)
-    // {
-    //     std::cout<<"CUDA error: "<<cudaGetErrorString(error)<<std::endl;
-    //     exit(-1);
-    // }
+    const size_t in_bytes  = in_elems  * sizeof(float);
+    const size_t out_bytes = out_elems * sizeof(float);
+    const size_t m_bytes   = m_elems   * sizeof(float);
 
+    // Allocate device buffers
+    cudaMalloc(reinterpret_cast<void **>(device_input_ptr),  in_bytes);
+    cudaMalloc(reinterpret_cast<void **>(device_output_ptr), out_bytes);
+    cudaMalloc(reinterpret_cast<void **>(device_mask_ptr),   m_bytes);
+
+    // Copy inputs to device
+    cudaMemcpy(*device_input_ptr, host_input, in_bytes, cudaMemcpyHostToDevice);
+    cudaMemcpy(*device_mask_ptr,  host_mask,  m_bytes,  cudaMemcpyHostToDevice);
+
+    // Clear output
+    cudaMemset(*device_output_ptr, 0, out_bytes);
 }
 
-
-__host__ void GPUInterface::conv_forward_gpu(float *device_output, const float *device_input, const float *device_mask, const int Batch, const int Map_out, const int Channel, const int Height, const int Width, const int K)
+__host__ void GPUInterface::conv_forward_gpu(float * device_output,
+                                             const float * device_input,
+                                             const float * device_mask,
+                                             const int Batch, const int Map_out,
+                                             const int Channel, const int Height,
+                                             const int Width, const int K)
 {
-    // TODO: Set the kernel dimensions and call the fused kernel
+    const int H_out = Height - K + 1;
+    const int W_out = Width  - K + 1;
 
+    const size_t Ncols = static_cast<size_t>(Batch) * H_out * W_out;
+
+    dim3 block(TILE, TILE, 1);
+    dim3 grid(iDivUp(static_cast<int>(Ncols), TILE), iDivUp(Map_out, TILE), 1);
+
+    matmul_conv_fused<<<grid, block>>>(device_mask,
+                                       device_input,
+                                       device_output,
+                                       Batch, Map_out, Channel, Height, Width, K);
+
+    cudaDeviceSynchronize();
 }
 
-
-__host__ void GPUInterface::conv_forward_gpu_epilog(float *host_output, float *device_output, float *device_input, float *device_mask, const int Batch, const int Map_out, const int Channel, const int Height, const int Width, const int K)
+__host__ void GPUInterface::conv_forward_gpu_epilog(float * host_output,
+                                                    float * device_output,
+                                                    float * device_input,
+                                                    float * device_mask,
+                                                    const int Batch, const int Map_out,
+                                                    const int Channel, const int Height,
+                                                    const int Width, const int K)
 {
-    // TODO: Copy the output back to host
+    const int H_out = Height - K + 1;
+    const int W_out = Width  - K + 1;
+    const size_t out_elems = static_cast<size_t>(Batch) * Map_out * H_out * W_out;
+    const size_t out_bytes = out_elems * sizeof(float);
 
-    // TODO: Free device memory
+    // Copy results back
+    cudaMemcpy(host_output, device_output, out_bytes, cudaMemcpyDeviceToHost);
 
+    // Free device memory
+    cudaFree(device_output);
+    cudaFree(device_input);
+    cudaFree(device_mask);
 }
-
 
 __host__ void GPUInterface::get_device_properties()
 {
     int deviceCount;
     cudaGetDeviceCount(&deviceCount);
-
-    for(int dev = 0; dev < deviceCount; dev++)
-    {
+    for (int dev = 0; dev < deviceCount; dev++) {
         cudaDeviceProp deviceProp;
         cudaGetDeviceProperties(&deviceProp, dev);
-
         std::cout<<"Device "<<dev<<" name: "<<deviceProp.name<<std::endl;
         std::cout<<"Computational capabilities: "<<deviceProp.major<<"."<<deviceProp.minor<<std::endl;
         std::cout<<"Max Global memory size: "<<deviceProp.totalGlobalMem<<std::endl;
         std::cout<<"Max Constant memory size: "<<deviceProp.totalConstMem<<std::endl;
         std::cout<<"Max Shared memory size per block: "<<deviceProp.sharedMemPerBlock<<std::endl;
         std::cout<<"Max threads per block: "<<deviceProp.maxThreadsPerBlock<<std::endl;
-        std::cout<<"Max block dimensions: "<<deviceProp.maxThreadsDim[0]<<" x, "<<deviceProp.maxThreadsDim[1]<<" y, "<<deviceProp.maxThreadsDim[2]<<" z"<<std::endl;
-        std::cout<<"Max grid dimensions: "<<deviceProp.maxGridSize[0]<<" x, "<<deviceProp.maxGridSize[1]<<" y, "<<deviceProp.maxGridSize[2]<<" z"<<std::endl;
+        std::cout<<"Max block dimensions: "<<deviceProp.maxThreadsDim[0]<<" x, "
+                 <<deviceProp.maxThreadsDim[1]<<" y, "<<deviceProp.maxThreadsDim[2]<<" z"<<std::endl;
+        std::cout<<"Max grid dimensions: "<<deviceProp.maxGridSize[0]<<" x, "
+                 <<deviceProp.maxGridSize[1]<<" y, "<<deviceProp.maxGridSize[2]<<" z"<<std::endl;
         std::cout<<"Warp Size: "<<deviceProp.warpSize<<std::endl;
     }
 }

@@ -18,7 +18,7 @@ module load cuda/12.4
 
 echo -e "job $SLURM_JOBID is starting on `hostname`\n\n"
 
-srun ./m2_unroll 100 > m2_unroll.out
+srun ./m2_unroll 10000 > m2_unroll.out
 
 # Generate nsys profile information, output will be in profile.out and report.nsys-rep
 # srun nsys profile --stats=true ./m2_unroll > profile.out

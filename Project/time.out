@@ -1,6 +1,0 @@
-srun: error: gpub021: task 0: Exited with exit code 2
-slurmstepd: error: execve(): /u/ezhang8/ece408git/Project/./m1_gpu: No such file or directory
-
-real	0m0.074s
-user	0m0.005s
-sys	0m0.006s

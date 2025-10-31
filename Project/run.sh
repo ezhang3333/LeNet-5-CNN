@@ -10,7 +10,7 @@ build() {
     echo "Building the project..."
     ./cleanfile.sh
     module load cuda/12.4
-    cmake ./project/ && make -j8
+    cmake ./project/ && make -j8    
     ./cleanfile.sh
 }
 
