@@ -10,17 +10,30 @@
     }                                                                     \
   } while (0)
 
-__global__ void spmvJDSKernel(float *out, int *matColStart, int *matCols,
-                              int *matRowPerm, int *matRows,
-                              float *matData, float *vec, int dim) {
-  //@@ insert spmv kernel for jds format
+__global__ void spmvJDSKernel(float *out, const int *matColStart, const int *matCols,
+                              const int *matRowPerm, const int *matRows,
+                              const float *matData, const float *vec, int dim) {
+  int row = blockIdx.x * blockDim.x + threadIdx.x;
+  if (row >= dim) return;
+
+  float acc = 0.0f;
+  int nnz_in_row = matRows[row];
+  for (int sec = 0; sec < nnz_in_row; ++sec) {
+    int idx = matColStart[sec] + row;
+    acc += matData[idx] * vec[matCols[idx]];
+  }
+
+  out[matRowPerm[row]] = acc;
 }
 
 static void spmvJDS(float *out, int *matColStart, int *matCols,
                     int *matRowPerm, int *matRows, float *matData,
                     float *vec, int dim) {
+  const int blockSize = 256;
+  const int gridSize  = (dim + blockSize - 1) / blockSize;
 
-  //@@ invoke spmv kernel for jds format
+  spmvJDSKernel<<<gridSize, blockSize>>>(
+      out, matColStart, matCols, matRowPerm, matRows, matData, vec, dim);
 }
 
 int main(int argc, char **argv) {
