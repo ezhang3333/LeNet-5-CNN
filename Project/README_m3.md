@@ -249,7 +249,7 @@ In the unrolled version, each loop iteration now processes four elements, reduci
 
 The CUDA Basic Linear Algebra Subprograms (cuBLAS) library is a GPU-accelerated library that provides standard matrix and vector operations. It's optimized for NVIDIA GPUs and is widely used for efficient implementations of linear algebra routines, particularly matrix multiplication, which you'll need in this project.
 
-Unlike most other optimization tasks, which are based on PM2, the cuBLAS optimization builds upon your PM1 Input Unrolling code. The reason is that it is hard to implement implicit input unrolling with cuBLAS.
+Unlike most other optimization tasks, which are based on PM2 kernel fusion, the cuBLAS optimization builds upon your unfused Input Unrolling code. The reason is that it is hard to implement implicit input unrolling with cuBLAS.
 
 For more information on using cuBLAS, see [cuBLAS Documentation](https://docs.nvidia.com/cuda/cublas/index.html). Focus on reading:
 - Section 1 (Introduction),
