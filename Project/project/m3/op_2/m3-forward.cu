@@ -6,17 +6,13 @@
 #define TILE 16
 #endif
 
-#define MAX_CONST_W_ELEMS 16384
-__constant__ float Wc[MAX_CONST_W_ELEMS];
-
 __host__ __device__ inline int iDivUp(int a, int b) { return (a + b - 1) / b; }
 
-__global__ void matmul_conv_fused_const(const float * __restrict__ mask,
-                                        const float * __restrict__ input,
-                                        float * __restrict__ output,
-                                        int Batch, int Map_out, int Channel,
-                                        int Height, int Width, int K,
-                                        int use_const_w)
+__global__ void matmul_conv_fused(const float * mask,
+                                  const float * input,
+                                  float * output,
+                                  int Batch, int Map_out, int Channel,
+                                  int Height, int Width, int K)
 {
     const int H_out = Height - K + 1;
     const int W_out = Width - K + 1;
@@ -43,12 +39,9 @@ __global__ void matmul_conv_fused_const(const float * __restrict__ mask,
             const int p = rem / K;
             const int q = rem % K;
 
-            const size_t mcpq = ((static_cast<size_t>(row) * Channel + c) * K + p) * K + q;
-
-            if (use_const_w && mcpq < MAX_CONST_W_ELEMS)
-                a_elt = Wc[mcpq];
-            else
-                a_elt = mask[mcpq];
+            const size_t mcpq =
+                ((static_cast<size_t>(row) * Channel + c) * K + p) * K + q;
+            a_elt = mask[mcpq];
         }
         As[threadIdx.y][threadIdx.x] = a_elt;
 
@@ -56,14 +49,11 @@ __global__ void matmul_conv_fused_const(const float * __restrict__ mask,
         const size_t b_row = t * TILE + threadIdx.y;
         if (b_row < Kc && col < Ncols)
         {
-            const int H_out_local = H_out;
-            const int W_out_local = W_out;
-            const size_t HW_out = static_cast<size_t>(H_out_local) * W_out_local;
-
+            const size_t HW_out = static_cast<size_t>(H_out) * W_out;
             const int b = static_cast<int>(col / HW_out);
             const size_t hw = static_cast<size_t>(col % HW_out);
-            const int h_o = static_cast<int>(hw / W_out_local);
-            const int w_o = static_cast<int>(hw % W_out_local);
+            const int h_o = static_cast<int>(hw / W_out);
+            const int w_o = static_cast<int>(hw % W_out);
 
             const int c = static_cast<int>(b_row / (K * K));
             const int rem = static_cast<int>(b_row % (K * K));
@@ -77,7 +67,8 @@ __global__ void matmul_conv_fused_const(const float * __restrict__ mask,
                 h_in >= 0 && h_in < Height &&
                 w_in >= 0 && w_in < Width)
             {
-                const size_t idx = (((static_cast<size_t>(b) * Channel + c) * Height + h_in) * Width + w_in);
+                const size_t idx =
+                    (((static_cast<size_t>(b) * Channel + c) * Height + h_in) * Width + w_in);
                 b_elt = input[idx];
             }
         }
@@ -85,31 +76,55 @@ __global__ void matmul_conv_fused_const(const float * __restrict__ mask,
 
         __syncthreads();
 
-        #pragma unroll
-        for (int k = 0; k < TILE; ++k)
-        {
-            acc += As[threadIdx.y][k] * Bs[k][threadIdx.x];
+    #if TILE == 16
+            acc += As[threadIdx.y][ 0] * Bs[ 0][threadIdx.x];
+            acc += As[threadIdx.y][ 1] * Bs[ 1][threadIdx.x];
+            acc += As[threadIdx.y][ 2] * Bs[ 2][threadIdx.x];
+            acc += As[threadIdx.y][ 3] * Bs[ 3][threadIdx.x];
+            acc += As[threadIdx.y][ 4] * Bs[ 4][threadIdx.x];
+            acc += As[threadIdx.y][ 5] * Bs[ 5][threadIdx.x];
+            acc += As[threadIdx.y][ 6] * Bs[ 6][threadIdx.x];
+            acc += As[threadIdx.y][ 7] * Bs[ 7][threadIdx.x];
+            acc += As[threadIdx.y][ 8] * Bs[ 8][threadIdx.x];
+            acc += As[threadIdx.y][ 9] * Bs[ 9][threadIdx.x];
+            acc += As[threadIdx.y][10] * Bs[10][threadIdx.x];
+            acc += As[threadIdx.y][11] * Bs[11][threadIdx.x];
+            acc += As[threadIdx.y][12] * Bs[12][threadIdx.x];
+            acc += As[threadIdx.y][13] * Bs[13][threadIdx.x];
+            acc += As[threadIdx.y][14] * Bs[14][threadIdx.x];
+            acc += As[threadIdx.y][15] * Bs[15][threadIdx.x];
+    #elif TILE == 8
+            acc += As[threadIdx.y][0] * Bs[0][threadIdx.x];
+            acc += As[threadIdx.y][1] * Bs[1][threadIdx.x];
+            acc += As[threadIdx.y][2] * Bs[2][threadIdx.x];
+            acc += As[threadIdx.y][3] * Bs[3][threadIdx.x];
+            acc += As[threadIdx.y][4] * Bs[4][threadIdx.x];
+            acc += As[threadIdx.y][5] * Bs[5][threadIdx.x];
+            acc += As[threadIdx.y][6] * Bs[6][threadIdx.x];
+            acc += As[threadIdx.y][7] * Bs[7][threadIdx.x];
+    #else
+            #pragma unroll
+            for (int k = 0; k < TILE; ++k)
+            {
+                acc += As[threadIdx.y][k] * Bs[k][threadIdx.x];
+            }
+    #endif
+            __syncthreads();
         }
 
-        __syncthreads();
-    }
+        if (row < Map_out && col < Ncols)
+        {
+            const size_t HW_out = static_cast<size_t>(H_out) * W_out;
+            const int b = static_cast<int>(col / HW_out);
+            const size_t hw = static_cast<size_t>(col % HW_out);
+            const int h_o = static_cast<int>(hw / W_out);
+            const int w_o = static_cast<int>(hw % W_out);
 
-    if (row < Map_out && col < Ncols)
-    {
-        const int H_out_local = H_out;
-        const int W_out_local = W_out;
-        const size_t HW_out = static_cast<size_t>(H_out_local) * W_out_local;
+            const size_t out_idx =
+                (((static_cast<size_t>(b) * Map_out + row) * H_out) + h_o) * W_out + w_o;
 
-        const int b = static_cast<int>(col / HW_out);
-        const size_t hw = static_cast<size_t>(col % HW_out);
-        const int h_o = static_cast<int>(hw / W_out_local);
-        const int w_o = static_cast<int>(hw % W_out_local);
-
-        const size_t out_idx =
-            (((static_cast<size_t>(b) * Map_out + row) * H_out_local) + h_o) * W_out_local + w_o;
-
-        output[out_idx] = acc;
-    }
+            output[out_idx] = acc;
+        }
 }
 
 __host__ void GPUInterface::conv_forward_gpu_prolog(const float * /*host_output*/,
@@ -139,11 +154,8 @@ __host__ void GPUInterface::conv_forward_gpu_prolog(const float * /*host_output*
 
     cudaMemcpy(*device_input_ptr, host_input, in_bytes, cudaMemcpyHostToDevice);
     cudaMemcpy(*device_mask_ptr, host_mask, m_bytes, cudaMemcpyHostToDevice);
-    cudaMemset(*device_output_ptr, 0, out_bytes);
 
-    if (m_elems <= MAX_CONST_W_ELEMS) {
-        cudaMemcpyToSymbol(Wc, host_mask, m_bytes, 0, cudaMemcpyHostToDevice);
-    }
+    cudaMemset(*device_output_ptr, 0, out_bytes);
 }
 
 __host__ void GPUInterface::conv_forward_gpu(float * device_output,
@@ -157,18 +169,14 @@ __host__ void GPUInterface::conv_forward_gpu(float * device_output,
     const int W_out = Width - K + 1;
 
     const size_t Ncols = static_cast<size_t>(Batch) * H_out * W_out;
-    const size_t m_elems = static_cast<size_t>(Map_out) * Channel * K * K;
 
     dim3 block(TILE, TILE, 1);
     dim3 grid(iDivUp(static_cast<int>(Ncols), TILE), iDivUp(Map_out, TILE), 1);
 
-    int use_const_w = (m_elems <= MAX_CONST_W_ELEMS) ? 1 : 0;
-
-    matmul_conv_fused_const<<<grid, block>>>(device_mask,
-                                             device_input,
-                                             device_output,
-                                             Batch, Map_out, Channel, Height, Width, K,
-                                             use_const_w);
+    matmul_conv_fused<<<grid, block>>>(device_mask,
+                                       device_input,
+                                       device_output,
+                                       Batch, Map_out, Channel, Height, Width, K);
 
     cudaDeviceSynchronize();
 }

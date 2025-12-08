@@ -8,7 +8,10 @@ set(CMAKE_CUDA_ARCHITECTURES "80;86")
 project (ece408project LANGUAGES CUDA CXX)
 set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -lineinfo")
 
-include_directories ("${PROJECT_SOURCE_DIR}/third_party/eigen")
+include_directories(
+    "${PROJECT_SOURCE_DIR}/third_party/eigen"
+    "${PROJECT_SOURCE_DIR}/src/layer/custom"
+)
 
 aux_source_directory(. DIR_SRCS)
 
@@ -37,3 +40,62 @@ target_link_libraries(m2_fused ece408net MiniDNNLib)
 add_executable(m3 m1_gpu.cc "${PROJECT_SOURCE_DIR}/src/layer/custom/m3-forward.cu"
                             "${PROJECT_SOURCE_DIR}/src/layer/custom/matmul.cu")
 target_link_libraries(m3 ece408net MiniDNNLib cublas)
+
+# --- Milestone 3 variant executables ---
+
+# op_0
+add_executable(m3_op0
+    m1_gpu.cc
+    "${PROJECT_SOURCE_DIR}/m3/op_0/m3-forward.cu"
+    "${PROJECT_SOURCE_DIR}/src/layer/custom/matmul.cu"
+)
+target_link_libraries(m3_op0 ece408net MiniDNNLib cublas)
+
+# op_1
+add_executable(m3_op1
+    m1_gpu.cc
+    "${PROJECT_SOURCE_DIR}/m3/op_1/m3-forward.cu"
+    "${PROJECT_SOURCE_DIR}/src/layer/custom/matmul.cu"
+)
+target_link_libraries(m3_op1 ece408net MiniDNNLib cublas)
+
+# op_2
+add_executable(m3_op2
+    m1_gpu.cc
+    "${PROJECT_SOURCE_DIR}/m3/op_2/m3-forward.cu"
+    "${PROJECT_SOURCE_DIR}/src/layer/custom/matmul.cu"
+)
+target_link_libraries(m3_op2 ece408net MiniDNNLib cublas)
+
+# op_4
+add_executable(m3_op4
+    m1_gpu.cc
+    "${PROJECT_SOURCE_DIR}/m3/op_4/m3-forward.cu"
+    "${PROJECT_SOURCE_DIR}/src/layer/custom/matmul.cu"
+)
+target_link_libraries(m3_op4 ece408net MiniDNNLib cublas)
+
+# op_6
+add_executable(m3_op6
+    m1_gpu.cc
+    "${PROJECT_SOURCE_DIR}/m3/op_6/m3-forward.cu"
+    "${PROJECT_SOURCE_DIR}/src/layer/custom/matmul.cu"
+)
+target_link_libraries(m3_op6 ece408net MiniDNNLib cublas)
+
+# req_0
+add_executable(m3_req0
+    m1_gpu.cc
+    "${PROJECT_SOURCE_DIR}/m3/req_0/m3-forward.cu"
+    "${PROJECT_SOURCE_DIR}/src/layer/custom/matmul.cu"
+)
+target_link_libraries(m3_req0 ece408net MiniDNNLib cublas)
+
+# req_1
+add_executable(m3_req1
+    m1_gpu.cc
+    "${PROJECT_SOURCE_DIR}/m3/req_1/m3-forward.cu"
+    "${PROJECT_SOURCE_DIR}/src/layer/custom/matmul.cu"
+)
+target_link_libraries(m3_req1 ece408net MiniDNNLib cublas)
+
