@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>LeNet-5 Demo</title>
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+  <body>
+    <main class="container">
+      <header class="header">
+        <h1>LeNet-5 (Fashion-MNIST) Demo</h1>
+        <p class="subtle">Draw on the canvas or upload an image, then run local inference.</p>
+      </header>
+
+      <section class="grid">
+        <div class="card">
+          <h2>Canvas</h2>
+          <canvas id="draw" width="280" height="280" aria-label="Drawing canvas"></canvas>
+          <div class="row">
+            <button id="clear" type="button">Clear</button>
+            <button id="predictCanvas" type="button" class="primary">Predict drawing</button>
+          </div>
+          <p class="hint">Tip: thick strokes work best. The model is trained on Fashion-MNIST (clothes), not digits.</p>
+        </div>
+
+        <div class="card">
+          <h2>Upload</h2>
+          <input id="file" type="file" accept="image/*" />
+          <div class="previewWrap">
+            <img id="preview" alt="Upload preview" />
+          </div>
+          <div class="row">
+            <button id="predictUpload" type="button" class="primary" disabled>Predict upload</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>Result</h2>
+          <div id="status" class="subtle">Waiting for input…</div>
+          <div class="result">
+            <div class="pred">
+              <div class="label">Prediction</div>
+              <div id="pred" class="value">—</div>
+            </div>
+            <div class="label">Probabilities</div>
+            <div id="bars" class="bars"></div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script src="/app.js"></script>
+  </body>
+</html>
+
