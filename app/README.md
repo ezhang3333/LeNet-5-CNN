@@ -18,3 +18,7 @@ Then open `http://127.0.0.1:8000`.
 - To train and export `weights.bin`, build and run the CPU trainer:
   - Configure/build: `cmake -S . -B build` then `cmake --build build --config Release`
   - Train: `build\\Release\\lenet_cpu.exe --data <path-to-mnist-idx-files> --out weights.bin --epochs 1`
+
+MNIST data:
+- Put the 4 uncompressed IDX files in a folder (for example `cnn/datasets/`) and pass that folder via `--data`.
+- `lenet_cpu` also checks `MNIST_DIR` / `LENET_DATA` and will auto-detect `cnn/datasets/` if present.

@@ -25,3 +25,7 @@ cmake --build build --config Release
 build\Release\lenet_cpu.exe --data <path-to-mnist-idx-files> --out weights.bin --epochs 1
 ```
 
+Notes:
+- `--data` should point to a folder containing the 4 uncompressed MNIST IDX files:
+  `train-images-idx3-ubyte`, `train-labels-idx1-ubyte`, `t10k-images-idx3-ubyte`, `t10k-labels-idx1-ubyte`.
+- If you put MNIST under `cnn/datasets/`, `lenet_cpu` will auto-detect it (or set `MNIST_DIR` / `LENET_DATA`).

@@ -1,4 +1,5 @@
 #include <chrono>
+#include <cstdlib>
 #include <filesystem>
 #include <iostream>
 #include <stdexcept>
@@ -40,12 +41,38 @@ static void usage(const char* argv0) {
       << "Usage:\n"
       << "  " << argv0 << " --data <mnist_dir> --out <weights.bin> [options]\n"
       << "\nOptions:\n"
+      << "  --data <mnist_dir>  directory containing MNIST IDX files\n"
       << "  --epochs N          (default: 1)\n"
       << "  --batch N           (default: 64)\n"
       << "  --lr LR             (default: 0.01)\n"
       << "  --train-limit N     (default: 60000)\n"
       << "  --test-limit N      (default: 10000)\n"
       << "  --resume <weights>  load weights before training\n";
+}
+
+static std::filesystem::path default_data_dir() {
+  if (const char* env = std::getenv("MNIST_DIR")) {
+    if (env[0] != '\0') {
+      return std::filesystem::path(env);
+    }
+  }
+  if (const char* env = std::getenv("LENET_DATA")) {
+    if (env[0] != '\0') {
+      return std::filesystem::path(env);
+    }
+  }
+
+  const std::filesystem::path candidates[] = {
+      std::filesystem::path("cnn") / "datasets",
+      std::filesystem::path("data") / "mnist",
+      std::filesystem::path("mnist"),
+  };
+  for (const auto& p : candidates) {
+    if (std::filesystem::exists(p)) {
+      return p;
+    }
+  }
+  return {};
 }
 
 static const char* require_arg(int& i, int argc, char** argv) {
@@ -58,7 +85,7 @@ static const char* require_arg(int& i, int argc, char** argv) {
 
 int main(int argc, char** argv) {
   try {
-    std::filesystem::path data_dir;
+    std::filesystem::path data_dir = default_data_dir();
     std::filesystem::path out_weights;
     std::filesystem::path resume_weights;
 
@@ -111,6 +138,9 @@ int main(int argc, char** argv) {
 
     if (data_dir.empty() || out_weights.empty()) {
       usage(argv[0]);
+      if (data_dir.empty()) {
+        std::cerr << "\nHint: pass --data <mnist_dir> or set MNIST_DIR (or LENET_DATA).\n";
+      }
       return 2;
     }
 
@@ -161,4 +191,3 @@ int main(int argc, char** argv) {
     return 1;
   }
 }
-

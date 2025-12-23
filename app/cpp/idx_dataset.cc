@@ -5,6 +5,58 @@
 #include <string>
 #include <vector>
 
+static std::string join_candidates(const std::vector<std::string>& xs) {
+  std::string out;
+  for (size_t i = 0; i < xs.size(); i++) {
+    out += xs[i];
+    if (i + 1 < xs.size()) {
+      out += ", ";
+    }
+  }
+  return out;
+}
+
+static std::filesystem::path resolve_existing(
+    const std::filesystem::path& data_dir,
+    const std::vector<std::string>& candidates) {
+  for (const auto& name : candidates) {
+    const auto p = data_dir / name;
+    if (std::filesystem::exists(p)) {
+      if (p.extension() == ".gz") {
+        throw std::runtime_error(
+            "Found gzip-compressed MNIST file: " + p.string() +
+            " (please unzip the .gz so the file has no .gz extension)");
+      }
+      return p;
+    }
+  }
+  throw std::runtime_error(
+      "MNIST file not found in: " + data_dir.string() + "\nTried: " + join_candidates(candidates) +
+      "\nExpected uncompressed IDX files (no .gz extension).");
+}
+
+static std::filesystem::path resolve_mnist_images(const std::filesystem::path& data_dir, bool train) {
+  const std::string base = train ? "train-images-idx3-ubyte" : "t10k-images-idx3-ubyte";
+  return resolve_existing(data_dir, {
+                                   base,
+                                   base + ".ubyte",
+                                   base + ".idx3-ubyte",
+                                   base + ".idx3-ubyte.ubyte",
+                                   base + ".gz",
+                               });
+}
+
+static std::filesystem::path resolve_mnist_labels(const std::filesystem::path& data_dir, bool train) {
+  const std::string base = train ? "train-labels-idx1-ubyte" : "t10k-labels-idx1-ubyte";
+  return resolve_existing(data_dir, {
+                                   base,
+                                   base + ".ubyte",
+                                   base + ".idx1-ubyte",
+                                   base + ".idx1-ubyte.ubyte",
+                                   base + ".gz",
+                               });
+}
+
 static uint32_t read_be_u32(std::istream& in) {
   uint8_t b[4]{};
   in.read(reinterpret_cast<char*>(b), 4);
@@ -130,8 +182,8 @@ IdxDataset load_mnist_idx_dataset(
     int out_height,
     int out_width,
     bool train) {
-  const auto images = train ? (data_dir / "train-images-idx3-ubyte") : (data_dir / "t10k-images-idx3-ubyte");
-  const auto labels = train ? (data_dir / "train-labels-idx1-ubyte") : (data_dir / "t10k-labels-idx1-ubyte");
+  const auto images = resolve_mnist_images(data_dir, train);
+  const auto labels = resolve_mnist_labels(data_dir, train);
 
   IdxDataset ds;
   ds.height = out_height;
@@ -144,4 +196,3 @@ IdxDataset load_mnist_idx_dataset(
   }
   return ds;
 }
-

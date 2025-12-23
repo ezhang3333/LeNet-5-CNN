@@ -8,3 +8,4 @@ libwb/
 __pycache__/
 *.pyc
 build/
+cnn/datasets/
