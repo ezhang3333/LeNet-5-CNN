@@ -46,8 +46,8 @@ function setResult(predLabel, labels, probs) {
 }
 
 async function predictFromDataURL(dataURL) {
-  setStatus("Running inference…");
-  predEl.textContent = "—";
+  setStatus("Running inference...");
+  predEl.textContent = "-";
   barsEl.innerHTML = "";
 
   const resp = await fetch("/api/predict", {

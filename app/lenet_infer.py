@@ -8,18 +8,7 @@ import numpy as np
 from PIL import Image
 
 
-FASHION_MNIST_LABELS = [
-    "T-shirt/top",
-    "Trouser",
-    "Pullover",
-    "Dress",
-    "Coat",
-    "Sandal",
-    "Shirt",
-    "Sneaker",
-    "Bag",
-    "Ankle boot",
-]
+MNIST_DIGIT_LABELS = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]
 
 
 def _softmax(logits: np.ndarray) -> np.ndarray:
@@ -153,7 +142,7 @@ def _load_weights(weights_path: Path) -> _Params:
     )
 
 
-class FashionMnistLenet86:
+class MnistDigitsLenet86:
     def __init__(self, weights_path: str | Path):
         self.weights_path = Path(weights_path)
         self.params = _load_weights(self.weights_path)
@@ -162,7 +151,7 @@ class FashionMnistLenet86:
         img = img.convert("L").resize((86, 86), resample=Image.BILINEAR)
         arr = np.asarray(img, dtype=np.float32)
 
-        # Canvas drawings tend to be black strokes on white background; Fashion-MNIST is white foreground on black.
+        # Canvas drawings tend to be black strokes on white background; MNIST is bright digit on dark background.
         if float(arr.mean()) > 127.0:
             arr = 255.0 - arr
 
@@ -190,11 +179,12 @@ class FashionMnistLenet86:
         idx = int(np.argmax(probs))
         return {
             "pred_index": idx,
-            "pred_label": FASHION_MNIST_LABELS[idx],
+            "pred_label": MNIST_DIGIT_LABELS[idx],
             "probs": [float(p) for p in probs],
-            "labels": FASHION_MNIST_LABELS,
+            "labels": MNIST_DIGIT_LABELS,
         }
 
+FashionMnistLenet86 = MnistDigitsLenet86
+FASHION_MNIST_LABELS = MNIST_DIGIT_LABELS
 
-__all__ = ["FashionMnistLenet86", "FASHION_MNIST_LABELS"]
-
+__all__ = ["MnistDigitsLenet86", "MNIST_DIGIT_LABELS", "FashionMnistLenet86", "FASHION_MNIST_LABELS"]

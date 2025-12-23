@@ -10,12 +10,12 @@ from pathlib import Path
 
 from PIL import Image
 
-from demo.lenet_infer import FashionMnistLenet86
+from app.lenet_infer import MnistDigitsLenet86
 
 
 class DemoHandler(SimpleHTTPRequestHandler):
     def __init__(self, *args, directory: str | None = None, **kwargs):
-        static_dir = Path(__file__).resolve().parent / "static"
+        static_dir = Path(__file__).resolve().parent / "frontend"
         super().__init__(*args, directory=str(static_dir), **kwargs)
 
     def do_GET(self) -> None:  # noqa: N802
@@ -68,15 +68,16 @@ class DemoHandler(SimpleHTTPRequestHandler):
 
 def main() -> None:
     repo_root = Path(__file__).resolve().parents[1]
-    weights_path = repo_root / "weights-86.bin"
+    weights_path = Path(os.environ.get("LENET_WEIGHTS", str(repo_root / "weights.bin")))
     if not weights_path.exists():
-        raise SystemExit(f"Missing weights file: {weights_path}")
+        legacy = repo_root / "weights-86.bin"
+        raise SystemExit(f"Missing weights file: {weights_path} (legacy: {legacy})")
 
     host = os.environ.get("LENET_DEMO_HOST", "127.0.0.1")
     port = int(os.environ.get("LENET_DEMO_PORT", "8000"))
 
     httpd = ThreadingHTTPServer((host, port), DemoHandler)
-    httpd.model = FashionMnistLenet86(weights_path)  # type: ignore[attr-defined]
+    httpd.model = MnistDigitsLenet86(weights_path)  # type: ignore[attr-defined]
 
     print(f"LeNet demo running at http://{host}:{port}")
     try:
@@ -86,4 +87,3 @@ def main() -> None:
 
 
 __all__ = ["main"]
-

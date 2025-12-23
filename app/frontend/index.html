@@ -3,13 +3,13 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>LeNet-5 Demo</title>
+    <title>LeNet-5 Digit Demo</title>
     <link rel="stylesheet" href="/style.css" />
   </head>
   <body>
     <main class="container">
       <header class="header">
-        <h1>LeNet-5 (Fashion-MNIST) Demo</h1>
+        <h1>LeNet-5 (MNIST Digits) Demo</h1>
         <p class="subtle">Draw on the canvas or upload an image, then run local inference.</p>
       </header>
 
@@ -21,7 +21,7 @@
             <button id="clear" type="button">Clear</button>
             <button id="predictCanvas" type="button" class="primary">Predict drawing</button>
           </div>
-          <p class="hint">Tip: thick strokes work best. The model is trained on Fashion-MNIST (clothes), not digits.</p>
+          <p class="hint">Tip: thick strokes work best. This model predicts digits (0-9).</p>
         </div>
 
         <div class="card">
@@ -37,11 +37,11 @@
 
         <div class="card">
           <h2>Result</h2>
-          <div id="status" class="subtle">Waiting for input…</div>
+          <div id="status" class="subtle">Waiting for input...</div>
           <div class="result">
             <div class="pred">
               <div class="label">Prediction</div>
-              <div id="pred" class="value">—</div>
+              <div id="pred" class="value">-</div>
             </div>
             <div class="label">Probabilities</div>
             <div id="bars" class="bars"></div>
@@ -53,4 +53,3 @@
     <script src="/app.js"></script>
   </body>
 </html>
-
