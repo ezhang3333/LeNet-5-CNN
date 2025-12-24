@@ -24,8 +24,10 @@ inline void set_normal_random(float* arr, int n, float mu, float sigma) {
 inline void shuffle_data(Matrix& data, Matrix& labels) {
   Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> perm(data.cols());
   perm.setIdentity();
-  std::random_shuffle(perm.indices().data(), perm.indices().data()
-                      + perm.indices().size());
+  std::shuffle(
+      perm.indices().data(),
+      perm.indices().data() + perm.indices().size(),
+      generator);
   data = data * perm;  // permute columns
   labels = labels * perm;
 }

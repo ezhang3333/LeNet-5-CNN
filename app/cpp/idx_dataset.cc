@@ -1,5 +1,6 @@
 #include "idx_dataset.h"
 
+#include <cmath>
 #include <fstream>
 #include <stdexcept>
 #include <string>
@@ -39,6 +40,7 @@ static std::filesystem::path resolve_mnist_images(const std::filesystem::path& d
   const std::string base = train ? "train-images-idx3-ubyte" : "t10k-images-idx3-ubyte";
   return resolve_existing(data_dir, {
                                    base,
+                                   train ? "train-images.idx3-ubyte" : "t10k-images.idx3-ubyte",
                                    base + ".ubyte",
                                    base + ".idx3-ubyte",
                                    base + ".idx3-ubyte.ubyte",
@@ -50,6 +52,7 @@ static std::filesystem::path resolve_mnist_labels(const std::filesystem::path& d
   const std::string base = train ? "train-labels-idx1-ubyte" : "t10k-labels-idx1-ubyte";
   return resolve_existing(data_dir, {
                                    base,
+                                   train ? "train-labels.idx1-ubyte" : "t10k-labels.idx1-ubyte",
                                    base + ".ubyte",
                                    base + ".idx1-ubyte",
                                    base + ".idx1-ubyte.ubyte",

@@ -14,7 +14,7 @@ Then open `http://127.0.0.1:8000`.
 
 ## Notes
 
-- The server loads weights from `LENET_WEIGHTS` (default: `weights.bin` in the repo root).
+- The server loads weights from `LENET_WEIGHTS` (default: `weights.bin` in the repo root; falls back to `weights-86.bin`).
 - To train and export `weights.bin`, build and run the CPU trainer:
   - Configure/build: `cmake -S . -B build` then `cmake --build build --config Release`
   - Train: `build\\Release\\lenet_cpu.exe --data <path-to-mnist-idx-files> --out weights.bin --epochs 1`

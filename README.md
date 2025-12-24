@@ -9,7 +9,7 @@ This repo is centered around the `app/` folder:
 ## Run the demo
 
 ```powershell
-$env:LENET_WEIGHTS="weights.bin"   # optional
+$env:LENET_WEIGHTS="weights.bin"   # optional (defaults to weights.bin, falls back to weights-86.bin)
 python -m app.run_demo
 ```
 

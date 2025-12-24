@@ -68,10 +68,18 @@ class DemoHandler(SimpleHTTPRequestHandler):
 
 def main() -> None:
     repo_root = Path(__file__).resolve().parents[1]
-    weights_path = Path(os.environ.get("LENET_WEIGHTS", str(repo_root / "weights.bin")))
-    if not weights_path.exists():
-        legacy = repo_root / "weights-86.bin"
-        raise SystemExit(f"Missing weights file: {weights_path} (legacy: {legacy})")
+    weights_env = os.environ.get("LENET_WEIGHTS")
+    if weights_env:
+        weights_path = Path(weights_env)
+    else:
+        weights_path = repo_root / "weights.bin"
+        if not weights_path.exists():
+            legacy = repo_root / "weights-86.bin"
+            if legacy.exists():
+                weights_path = legacy
+                print(f"Using legacy weights file: {weights_path} (set LENET_WEIGHTS to override)")
+            else:
+                raise SystemExit(f"Missing weights file: {weights_path} (legacy: {legacy})")
 
     host = os.environ.get("LENET_DEMO_HOST", "127.0.0.1")
     port = int(os.environ.get("LENET_DEMO_PORT", "8000"))
