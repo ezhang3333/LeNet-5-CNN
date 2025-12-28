@@ -3,6 +3,7 @@
 #include <filesystem>
 #include <iostream>
 #include <numeric>
+#include <random>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -128,6 +129,17 @@ static Matrix gather_cols(const Matrix& src, const std::vector<int>& indices, in
   return out;
 }
 
+static int count_correct(const Matrix& predictions, const Matrix& labels) {
+  const int n = predictions.cols();
+  int correct = 0;
+  for (int i = 0; i < n; i++) {
+    Matrix::Index max_index;
+    predictions.col(i).maxCoeff(&max_index);
+    correct += int(max_index) == int(labels(0, i));
+  }
+  return correct;
+}
+
 int main(int argc, char** argv) {
   try {
     const std::filesystem::path cwd = std::filesystem::current_path();
@@ -219,11 +231,13 @@ int main(int argc, char** argv) {
     std::cout << "Training: epochs=" << epochs << " batch=" << batch << " lr=" << lr << std::endl;
 
     const int n_train = train.images.cols();
-    std::vector<int> indices(size_t(n_train));
+    std::vector<int> indices;
+    indices.resize(static_cast<size_t>(n_train));
     std::iota(indices.begin(), indices.end(), 0);
+    std::mt19937 rng(0xC0FFEE);
 
     for (int epoch = 1; epoch <= epochs; epoch++) {
-      std::shuffle(indices.begin(), indices.end(), generator);
+      std::shuffle(indices.begin(), indices.end(), rng);
 
       auto t0 = std::chrono::high_resolution_clock::now();
       for (int start = 0; start < n_train; start += batch) {
@@ -240,8 +254,17 @@ int main(int argc, char** argv) {
       const auto t1 = std::chrono::high_resolution_clock::now();
       const std::chrono::duration<double> dt = t1 - t0;
 
-      net.forward(test.images);
-      const float acc = compute_accuracy(net.output(), test.labels);
+      int correct = 0;
+      const int n_test = test.images.cols();
+      const int eval_batch = std::max(1, std::min(512, batch * 4));
+      for (int start = 0; start < n_test; start += eval_batch) {
+        const int b = std::min(eval_batch, n_test - start);
+        const Matrix x = test.images.middleCols(start, b);
+        const Matrix y = test.labels.middleCols(start, b);
+        net.forward(x);
+        correct += count_correct(net.output(), y);
+      }
+      const float acc = n_test > 0 ? float(correct) / float(n_test) : 0.0f;
       std::cout << "Epoch " << epoch << "/" << epochs << " - test accuracy: " << acc
                 << " - time: " << dt.count() << "s" << std::endl;
     }
