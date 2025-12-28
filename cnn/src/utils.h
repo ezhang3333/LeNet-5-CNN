@@ -28,8 +28,9 @@ inline void shuffle_data(Matrix& data, Matrix& labels) {
       perm.indices().data(),
       perm.indices().data() + perm.indices().size(),
       generator);
-  data = data * perm;  // permute columns
-  labels = labels * perm;
+  // Avoid Eigen aliasing issues with in-place assignment.
+  data = (data * perm).eval();  // permute columns
+  labels = (labels * perm).eval();
 }
 
 // encode discrete values to one-hot values
