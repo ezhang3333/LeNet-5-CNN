@@ -2,8 +2,10 @@
 #include <cstdlib>
 #include <filesystem>
 #include <iostream>
+#include <numeric>
 #include <stdexcept>
 #include <string>
+#include <vector>
 
 #include "idx_dataset.h"
 
@@ -16,6 +18,32 @@
 #include "network.h"
 #include "optimizer/sgd.h"
 #include "utils.h"
+
+static std::filesystem::path find_repo_root(std::filesystem::path start) {
+  std::error_code ec;
+  start = std::filesystem::absolute(start, ec);
+  if (ec) {
+    start.clear();
+  }
+
+  auto looks_like_root = [&](const std::filesystem::path& p) -> bool {
+    return std::filesystem::exists(p / "CMakeLists.txt") &&
+           std::filesystem::exists(p / "app") &&
+           std::filesystem::exists(p / "cnn");
+  };
+
+  std::filesystem::path cur = start.empty() ? std::filesystem::current_path() : start;
+  for (int i = 0; i < 10; i++) {
+    if (looks_like_root(cur)) {
+      return cur;
+    }
+    if (!cur.has_parent_path()) {
+      break;
+    }
+    cur = cur.parent_path();
+  }
+  return {};
+}
 
 static Network create_lenet86() {
   Network net;
@@ -39,9 +67,10 @@ static Network create_lenet86() {
 static void usage(const char* argv0) {
   std::cerr
       << "Usage:\n"
-      << "  " << argv0 << " --data <mnist_dir> --out <weights.bin> [options]\n"
+      << "  " << argv0 << " [--data <mnist_dir>] [--out <weights.bin>] [options]\n"
       << "\nOptions:\n"
       << "  --data <mnist_dir>  directory containing MNIST IDX files\n"
+      << "  --out <weights.bin> output path (default: <repo_root>/weights.bin)\n"
       << "  --epochs N          (default: 1)\n"
       << "  --batch N           (default: 64)\n"
       << "  --lr LR             (default: 0.01)\n"
@@ -51,6 +80,8 @@ static void usage(const char* argv0) {
 }
 
 static std::filesystem::path default_data_dir() {
+  const std::filesystem::path repo_root = find_repo_root(std::filesystem::current_path());
+
   if (const char* env = std::getenv("MNIST_DIR")) {
     if (env[0] != '\0') {
       return std::filesystem::path(env);
@@ -66,9 +97,12 @@ static std::filesystem::path default_data_dir() {
       std::filesystem::path("cnn") / "datasets",
       std::filesystem::path("data") / "mnist",
       std::filesystem::path("mnist"),
+      repo_root / "cnn" / "datasets",
+      repo_root / "data" / "mnist",
+      repo_root / "mnist",
   };
   for (const auto& p : candidates) {
-    if (std::filesystem::exists(p)) {
+    if (!p.empty() && std::filesystem::exists(p)) {
       return p;
     }
   }
@@ -83,8 +117,22 @@ static const char* require_arg(int& i, int argc, char** argv) {
   return argv[i];
 }
 
+static Matrix gather_cols(const Matrix& src, const std::vector<int>& indices, int start, int count) {
+  if (count <= 0) {
+    return Matrix(src.rows(), 0);
+  }
+  Matrix out(src.rows(), count);
+  for (int i = 0; i < count; i++) {
+    out.col(i) = src.col(indices[size_t(start + i)]);
+  }
+  return out;
+}
+
 int main(int argc, char** argv) {
   try {
+    const std::filesystem::path cwd = std::filesystem::current_path();
+    const std::filesystem::path repo_root = find_repo_root(cwd);
+
     std::filesystem::path data_dir = default_data_dir();
     std::filesystem::path out_weights;
     std::filesystem::path resume_weights;
@@ -136,10 +184,21 @@ int main(int argc, char** argv) {
       throw std::runtime_error("Unknown arg: " + arg);
     }
 
-    if (data_dir.empty() || out_weights.empty()) {
+    if (out_weights.empty()) {
+      if (!repo_root.empty()) {
+        out_weights = repo_root / "weights.bin";
+      } else {
+        out_weights = cwd / "weights.bin";
+      }
+      std::cout << "No --out provided; defaulting to: " << out_weights.string() << std::endl;
+    }
+
+    if (data_dir.empty()) {
       usage(argv[0]);
-      if (data_dir.empty()) {
-        std::cerr << "\nHint: pass --data <mnist_dir> or set MNIST_DIR (or LENET_DATA).\n";
+      std::cerr << "\nHint: pass --data <mnist_dir> (folder with MNIST IDX files), or set MNIST_DIR / LENET_DATA.\n";
+      std::cerr << "Current working directory: " << cwd.string() << std::endl;
+      if (!repo_root.empty()) {
+        std::cerr << "Detected repo root: " << repo_root.string() << std::endl;
       }
       return 2;
     }
@@ -160,14 +219,18 @@ int main(int argc, char** argv) {
     std::cout << "Training: epochs=" << epochs << " batch=" << batch << " lr=" << lr << std::endl;
 
     const int n_train = train.images.cols();
+    std::vector<int> indices(size_t(n_train));
+    std::iota(indices.begin(), indices.end(), 0);
+
     for (int epoch = 1; epoch <= epochs; epoch++) {
-      shuffle_data(train.images, train.labels);
+      std::shuffle(indices.begin(), indices.end(), generator);
 
       auto t0 = std::chrono::high_resolution_clock::now();
       for (int start = 0; start < n_train; start += batch) {
         const int b = std::min(batch, n_train - start);
-        const Matrix x = train.images.middleCols(start, b);
-        const Matrix y = one_hot_encode(train.labels.middleCols(start, b), 10);
+        const Matrix x = gather_cols(train.images, indices, start, b);
+        const Matrix y_labels = gather_cols(train.labels, indices, start, b);
+        const Matrix y = one_hot_encode(y_labels, 10);
 
         net.forward(x);
         net.backward(x, y);

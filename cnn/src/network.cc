@@ -1,4 +1,6 @@
 #include "./network.h"
+#include <filesystem>
+#include <stdexcept>
 
 void Network::forward(const Matrix& input) {
   if (layers.empty())
@@ -112,8 +114,19 @@ void Network::check_gradient(const Matrix& input, const Matrix& target,
 }
 
 void Network::save_parameters(std::string filename) {
-  std::ofstream out;
-  out.open(filename, std::ios::out | std::ios::binary);
+  std::filesystem::path out_path(filename);
+  if (!out_path.parent_path().empty()) {
+    std::error_code ec;
+    std::filesystem::create_directories(out_path.parent_path(), ec);
+    if (ec) {
+      throw std::runtime_error("Failed to create output directory: " + out_path.parent_path().string());
+    }
+  }
+
+  std::ofstream out(out_path, std::ios::out | std::ios::binary);
+  if (!out) {
+    throw std::runtime_error("Failed to open output file for writing: " + out_path.string());
+  }
 
   int n_layer = layers.size();
   out.write(reinterpret_cast<char*>(&n_layer), sizeof(int));
@@ -130,6 +143,11 @@ void Network::save_parameters(std::string filename) {
     for (int j = 0; j < layer_p_size; j++) {
       out.write(reinterpret_cast<char*>(&layer_params[j]), sizeof(float));
     }
+  }
+
+  out.flush();
+  if (!out) {
+    throw std::runtime_error("Failed while writing output file: " + out_path.string());
   }
 }
 

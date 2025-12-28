@@ -22,10 +22,11 @@ Requires CMake + a C++ compiler:
 ```powershell
 cmake -S . -B build
 cmake --build build --config Release
-build\Release\lenet_cpu.exe --data <path-to-mnist-idx-files> --out weights.bin --epochs 1
+build\app\cpp\lenet_cpu.exe --out weights.bin --epochs 1
 ```
 
 Notes:
 - `--data` should point to a folder containing the 4 uncompressed MNIST IDX files:
   `train-images-idx3-ubyte`, `train-labels-idx1-ubyte`, `t10k-images-idx3-ubyte`, `t10k-labels-idx1-ubyte`.
 - If you put MNIST under `cnn/datasets/`, `lenet_cpu` will auto-detect it (or set `MNIST_DIR` / `LENET_DATA`).
+- If you run `lenet_cpu` from inside a build folder, pass an absolute `--out` (or run it from the repo root) so you know where `weights.bin` is written.
