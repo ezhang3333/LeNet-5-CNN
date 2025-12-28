@@ -23,7 +23,7 @@ Open `http://127.0.0.1:8000`.
 
 - More details in `app/README.md`.
 
-### MNIST data
+## MNIST data
 
 If you are interested in training on the dataset yourself, download the MNIST IDX files 
 and put the 4 uncompressed files in `cnn/datasets/`:
@@ -32,7 +32,7 @@ and put the 4 uncompressed files in `cnn/datasets/`:
 - `t10k-images-idx3-ubyte`
 - `t10k-labels-idx1-ubyte`
 
-### Build + train
+## Train model
 
 ```powershell
 cmake -S . -B build
